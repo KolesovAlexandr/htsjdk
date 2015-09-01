@@ -173,10 +173,9 @@ public class SortingCollection<T> implements Iterable<T> {
 
 
 
-            final T[] tmpRamRecords = ramRecords.clone();
+            final T[] tmpRamRecords = ramRecords;
 
-//            ramRecords = (T[])Array.newInstance(this.componentType, maxRecordsInRam);
-
+            ramRecords = (T[])Array.newInstance(this.componentType, maxRecordsInRam);
 
             final int tmpNumRecordsInRam = numRecordsInRam;
 

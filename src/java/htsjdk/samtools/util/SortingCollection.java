@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Array;
-import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -44,6 +43,7 @@ import java.util.NoSuchElementException;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -60,8 +60,11 @@ import java.util.concurrent.TimeUnit;
  * to compress temporary files.
  */
 public class SortingCollection<T> implements Iterable<T> {
+    public Future<?> tmp;
 
     private final Class<T> componentType;
+    private boolean isServiceRun = false;
+
 
     /**
      * Client must implement this class, which defines the way in which records are written to and
@@ -134,7 +137,8 @@ public class SortingCollection<T> implements Iterable<T> {
     private boolean destructiveIteration = true;
 
     private TempStreamFactory tempStreamFactory = new TempStreamFactory();
-    //private final ExecutorService service = Executors.newCachedThreadPool();
+    private final ExecutorService service = Executors.newCachedThreadPool();
+
 
     /**
      * Prepare to accumulate records to be sorted
@@ -170,41 +174,39 @@ public class SortingCollection<T> implements Iterable<T> {
             throw new IllegalStateException("Cannot add after calling iterator()");
         }
         if (numRecordsInRam == maxRecordsInRam) {
-
-
-
-            final T[] tmpRamRecords = ramRecords.clone();
-
-//            ramRecords = (T[])Array.newInstance(this.componentType, maxRecordsInRam);
-
-
+            final T[] tmpRamRecords = ramRecords;
+            ramRecords = (T[])Array.newInstance(componentType, maxRecordsInRam);
             final int tmpNumRecordsInRam = numRecordsInRam;
+            numRecordsInRam = 0;
 
-            numRecordsInRam = new Integer(0);
+//           final ExecutorService service = Executors.newCachedThreadPool();
+//            isServiceRun = true;
 
-            System.out.println("spillToDisk " + tmpNumRecordsInRam + " " + numRecordsInRam  );
 
-
-/*            final ExecutorService service = Executors.newSingleThreadExecutor();
-            service.execute(new Runnable() {
+            service.submit(new Runnable() {
                 @Override
                 public void run() {
-                    spillToDisk(tmpRamRecords,tmpNumRecordsInRam);
+
+                    spillToDisk(tmpRamRecords, tmpNumRecordsInRam);
+
                 }
             });
+//            spillToDisk(tmpRamRecords, tmpNumRecordsInRam);
 
-            service.shutdown();
+          /* service.shutdown();
             try {
                 service.awaitTermination(1, TimeUnit.DAYS);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }*/
-            System.out.println("Start");
-            spillToDisk(tmpRamRecords, tmpNumRecordsInRam);
-            System.out.println("Finish");
+
+
+//            spillToDisk(tmpRamRecords, tmpNumRecordsInRam);
+
 
         }
         ramRecords[numRecordsInRam++] = rec;
+
     }
 
     /**
@@ -226,15 +228,45 @@ public class SortingCollection<T> implements Iterable<T> {
             return;
         }
 
-        if (this.numRecordsInRam > 0) {
 
-            spillToDisk(this.ramRecords,this.numRecordsInRam);
+        if (this.numRecordsInRam > 0) {
+          /*  final ExecutorService service = Executors.newCachedThreadPool();
+            final T[] tmpRamRecords = this.ramRecords;
+            final int tmpNumrecords = this.numRecordsInRam;
+
+            service.submit(new Runnable() {
+                @Override
+                public void run() {
+                    spillToDisk(tmpRamRecords, tmpNumrecords);
+                }
+            });*/
+            spillToDisk(this.ramRecords, this.numRecordsInRam);
+
 
         }
 
         // Facilitate GC
         this.ramRecords = null;
     }
+
+    public void serviceShutdown(){
+
+        service.shutdown();
+        try {
+            service.awaitTermination(1,TimeUnit.DAYS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public boolean isTerminatedService(){
+        return service.isTerminated();
+    }
+    /*public boolean serviceRun(){
+        return isServiceRun;
+    }*/
+
 
     /**
      * @return True if this collection is allowed to discard data during iteration in order to reduce memory
@@ -266,7 +298,7 @@ public class SortingCollection<T> implements Iterable<T> {
                 for (int i = 0; i < nmRecordsInRam; ++i) {
                     this.codec.encode(rmRecords[i]);
                     // Facilitate GC
-                    rmRecords[i] = null;
+//                    rmRecords[i] = null;
                 }
 
                 os.flush();

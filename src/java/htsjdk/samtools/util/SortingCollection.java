@@ -300,6 +300,8 @@ public class SortingCollection<T> implements Iterable<T> {
                     // Facilitate GC
 //                    rmRecords[i] = null;
                 }
+                // Facilitate GC
+                rmRecords = null;
 
                 os.flush();
             } catch (RuntimeIOException ex) {

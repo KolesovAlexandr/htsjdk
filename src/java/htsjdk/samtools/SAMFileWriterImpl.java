@@ -179,7 +179,7 @@ public abstract class SAMFileWriterImpl implements SAMFileWriter
             assertPresorted(alignment);
             writeAlignment(alignment);
         } else {
-            alignmentSorter.add(alignment);
+            alignmentSorter.add(alignment, 10000);
         }
     }
 

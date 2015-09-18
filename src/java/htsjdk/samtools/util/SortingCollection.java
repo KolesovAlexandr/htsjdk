@@ -166,14 +166,14 @@ public class SortingCollection<T> implements Iterable<T> {
         this.componentType = componentType;
     }
 
-    public void add(final T rec) {
+    public void add(final T rec, final int i) {
         if (doneAdding) {
             throw new IllegalStateException("Cannot add after calling doneAdding()");
         }
         if (iterationStarted) {
             throw new IllegalStateException("Cannot add after calling iterator()");
         }
-        if (numRecordsInRam == maxRecordsInRam) {
+        if (numRecordsInRam==maxRecordsInRam) {
 
             final T[] tmpRamRecords = ramRecords;
             ramRecords = (T[])Array.newInstance(componentType, maxRecordsInRam);
@@ -302,7 +302,7 @@ public class SortingCollection<T> implements Iterable<T> {
 //                    rmRecords[i] = null;
                 }
                 // Facilitate GC
-                rmRecords = null;
+              //  rmRecords = null;
 
                 os.flush();
             } catch (RuntimeIOException ex) {

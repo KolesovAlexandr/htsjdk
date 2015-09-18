@@ -167,6 +167,7 @@ public class SAMRecord implements Cloneable, Locatable, Serializable {
      */
     private transient SAMFileSource mFileSource;
     private SAMFileHeader mHeader = null;
+    public int id;
 
     public SAMRecord(final SAMFileHeader header) {
         mHeader = header;
@@ -1280,6 +1281,14 @@ public class SAMRecord implements Cloneable, Locatable, Serializable {
     @Override
     public int getEnd() {
         return getAlignmentEnd();
+    }
+
+    public void setID(final int id) {
+        this.id = id;
+    }
+
+    public int getID() {
+        return id;
     }
 
     /**

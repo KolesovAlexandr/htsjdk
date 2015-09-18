@@ -94,7 +94,7 @@ public class SortingCollectionTest {
         int numStringsGenerated = 0;
         final SortingCollection<String> sortingCollection = makeSortingCollection(maxRecordsInRam);
         for (final String s : new RandomStringGenerator(numStringsToGenerate)) {
-            sortingCollection.add(s);
+            sortingCollection.add(s, 10000);
             strings[numStringsGenerated++] = s;
         }
         Arrays.sort(strings, new StringComparator());

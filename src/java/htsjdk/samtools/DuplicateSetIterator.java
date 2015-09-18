@@ -70,7 +70,7 @@ public class DuplicateSetIterator implements CloseableIterator<DuplicateSet> {
 
             while (iterator.hasNext()) {
                 final SAMRecord record = iterator.next();
-                alignmentSorter.add(record);
+                alignmentSorter.add(record, 10000);
             }
             iterator.close();
 

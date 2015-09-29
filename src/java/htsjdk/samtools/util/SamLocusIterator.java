@@ -60,6 +60,7 @@ public class SamLocusIterator implements Iterable<SamLocusIterator.LocusInfo>, C
     public static class RecordAndOffset {
         private final SAMRecord record;
         private final int offset;
+        private boolean processed = false;
 
         public RecordAndOffset(final SAMRecord record, final int offset) {
             this.offset = offset;
@@ -68,9 +69,17 @@ public class SamLocusIterator implements Iterable<SamLocusIterator.LocusInfo>, C
 
         /** Zero-based offset into the read corresponding to the current position in LocusInfo */
         public int getOffset() { return offset; }
+
         public SAMRecord getRecord() { return record; }
+
         public byte getReadBase() { return record.getReadBases()[offset]; }
+
         public byte getBaseQuality() { return record.getBaseQualities()[offset]; }
+
+        public boolean isProcessed(){return processed;}
+
+        public void process(){processed=true;}
+
     }
 
     /**

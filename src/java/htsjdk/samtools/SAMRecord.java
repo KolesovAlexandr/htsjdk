@@ -155,6 +155,16 @@ public class SAMRecord implements Cloneable, Locatable, Serializable {
     protected Integer mMateReferenceIndex = null;
     private Integer mIndexingBin = null;
 
+    private boolean _processed = false;
+
+    public boolean isProcessed() {
+        return _processed;
+    }
+
+    public void process() {
+        _processed = true;
+    }
+
     /**
      * Some attributes (e.g. CIGAR) are not decoded immediately.  Use this to decide how to validate when decoded.
      */

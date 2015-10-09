@@ -60,11 +60,15 @@ public class SamLocusIterator implements Iterable<SamLocusIterator.LocusInfo>, C
     public static class RecordAndOffset {
         private final SAMRecord record;
         private final int offset;
-//        private boolean processed = false;
+        private final int end;
+        private int begin;
 
-        public RecordAndOffset(final SAMRecord record, final int offset) {
+        public RecordAndOffset(final SAMRecord record, final int offset,final int begin, final int end) {
+
             this.offset = offset;
             this.record = record;
+            this.begin = begin;
+            this.end = end;
         }
 
         /** Zero-based offset into the read corresponding to the current position in LocusInfo */
@@ -76,10 +80,17 @@ public class SamLocusIterator implements Iterable<SamLocusIterator.LocusInfo>, C
 
         public byte getBaseQuality() { return record.getBaseQualities()[offset]; }
 
-        public boolean isRecordProcessed() {return record.isProcessed();}
+//        public boolean isRecordProcessed() {return record.isProcessed();}
+//
+//        public void processRecord() {record.process();}
 
-        public void processRecord() {record.process();}
+        public int getBegin() {
+            return begin;
+        }
 
+        public int getEnd() {
+            return end;
+        }
     }
 
     /**
@@ -97,8 +108,8 @@ public class SamLocusIterator implements Iterable<SamLocusIterator.LocusInfo>, C
         }
 
         /** Accumulate info for one read at the locus. */
-        public void add(final SAMRecord read, final int position) {
-            recordAndOffsets.add(new RecordAndOffset(read, position));
+        public void add(final SAMRecord read, final int position,final int begin,final int end) {
+            recordAndOffsets.add(new RecordAndOffset(read, position,begin.,end));
         }
 
         public int getSequenceIndex() { return referenceSequence.getSequenceIndex(); }
@@ -391,7 +402,7 @@ public class SamLocusIterator implements Iterable<SamLocusIterator.LocusInfo>, C
 
                 // if the quality score cutoff is met, accumulate the base info
                 if (dontCheckQualities || baseQualities[readOffset] >= minQuality) {
-                    accumulator.get(refOffset).add(rec, readOffset);
+                    accumulator.get(refOffset).add(rec, readOffset,,);
                 }
             }
         }

@@ -59,16 +59,13 @@ public class SamLocusIterator implements Iterable<SamLocusIterator.LocusInfo>, C
      */
     public static class RecordAndOffset {
         private final SAMRecord record;
+        private int readLenth;
         private final int offset;
-        private final int end;
-        private int begin;
 
-        public RecordAndOffset(final SAMRecord record, final int offset,final int begin, final int end) {
-
+        public RecordAndOffset(final SAMRecord record, final int offset, final int readLenth) {
             this.offset = offset;
             this.record = record;
-            this.begin = begin;
-            this.end = end;
+            this.readLenth = readLenth;
         }
 
         /** Zero-based offset into the read corresponding to the current position in LocusInfo */
@@ -80,16 +77,16 @@ public class SamLocusIterator implements Iterable<SamLocusIterator.LocusInfo>, C
 
         public byte getBaseQuality() { return record.getBaseQualities()[offset]; }
 
-//        public boolean isRecordProcessed() {return record.isProcessed();}
-//
-//        public void processRecord() {record.process();}
-
-        public int getBegin() {
-            return begin;
+        public boolean isProcessed() {
+            return record.isProcessed();
         }
 
-        public int getEnd() {
-            return end;
+        public void process() {
+            record.process();
+        }
+
+        public int getReadLenth() {
+            return readLenth;
         }
     }
 
@@ -108,8 +105,8 @@ public class SamLocusIterator implements Iterable<SamLocusIterator.LocusInfo>, C
         }
 
         /** Accumulate info for one read at the locus. */
-        public void add(final SAMRecord read, final int position,final int begin,final int end) {
-            recordAndOffsets.add(new RecordAndOffset(read, position,begin.,end));
+        public void add(final SAMRecord read, final int position, final int readLenth) {
+            recordAndOffsets.add(new RecordAndOffset(read, position, readLenth));
         }
 
         public int getSequenceIndex() { return referenceSequence.getSequenceIndex(); }
@@ -148,7 +145,7 @@ public class SamLocusIterator implements Iterable<SamLocusIterator.LocusInfo>, C
      * a) Empty, or
      * b) That the element at index 0 corresponds to the same genomic locus as the first aligned base
      * in the read being accumulated
-     * <p>
+     * <p/>
      * Before each new read is accumulated the accumulator is examined and:
      * i) any LocusInfos at positions earlier than the read start are moved to {@link #complete}
      * ii) any uncovered positions between the last LocusInfo and the first aligned base of the new read
@@ -393,6 +390,7 @@ public class SamLocusIterator implements Iterable<SamLocusIterator.LocusInfo>, C
             final int refStart = alignmentBlock.getReferenceStart();
             final int blockLength = alignmentBlock.getLength();
 
+            final int readLenth = readStart + blockLength - 1;
             for (int i = 0; i < blockLength; ++i) {
                 // 0-based offset into the read of the current base
                 final int readOffset = readStart + i - 1;
@@ -402,7 +400,7 @@ public class SamLocusIterator implements Iterable<SamLocusIterator.LocusInfo>, C
 
                 // if the quality score cutoff is met, accumulate the base info
                 if (dontCheckQualities || baseQualities[readOffset] >= minQuality) {
-                    accumulator.get(refOffset).add(rec, readOffset,,);
+                    accumulator.get(refOffset).add(rec, readOffset, readLenth);
                 }
             }
         }
